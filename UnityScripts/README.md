@@ -27,17 +27,17 @@ A simple event manager that allow to control object trajectories with *t* (start
 The *logger* scripts are used to display information on the UI in the compiled application. Their goal is to substitute to the Debug.Log function from Unity. Each of them require a UI panel with a TextField.
 
 #### OscLogger
-Used to display incomming OSC messages. It is possible to collapse similar messages in a single line.
+Used to display incomming OSC messages. It is possible to collapse similar messages in a single line.  
 Used like this : `OscLogger.Instance.Print("A string to print");`  
 For example, it is called from MoveFromOSC script.
 
 #### DebugLogger
-Used to substitute to the Debug.Log function from Unity
-Used like this : `DebugLogger.Instance.Print("A string to print");` 
+Used to substitute to the Debug.Log function from Unity.  
+Used like this : `DebugLogger.Instance.Print("A string to print");`  
 
 #### PositionLogger
-Used to display X, Y, Z position from an object on a single line.
-Used like this : `PositionLogger.Instance.Print("A string to print");` 
+Used to display X, Y, Z position from an object on a single line.  
+Used like this : `PositionLogger.Instance.Print("A string to print");`  
 
 #### LogObjectPosition
 Script to attach to the main camera. It will display its position on the PositionLogger panel.
