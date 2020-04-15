@@ -1,9 +1,11 @@
 # Immersive Sound Space
 A bunch of scripts to follow wireless headphones in 3D space (based on HTC Vive trackers) and compute spacialized sound on Unity
 
-The cornerstone of this system is the HTC Tracker Position Sender Script in the Tracking directory. It is written in python and was made possible mainly thanks to [python openvr](https://github.com/cmbruns/pyopenvr) and [python-osc](https://github.com/attwad/python-osc). More instructions for the installation can be found [here](Tracking/README.md).
+The cornerstone of this system is the HTC Tracker Position Sender Script in the Tracking folder. It is written in python and was made possible mainly thanks to [python openvr](https://github.com/cmbruns/pyopenvr) and [python-osc](https://github.com/attwad/python-osc). More instructions for the installation can be found [here](Tracking/README.md).
 
 Some helpful tools to be used alongside this script can be found in this [other repo](https://github.com/numediart/ISS_Utils).
+
+In the UnityScripts folder, you will find... C# scripts for Unity. They are given here for convenience. See the folder [Readme](UnityScripts/README.md) for more information.
 
 ## License
 © - 2020 – UMONS - CLICK' Living Lab
