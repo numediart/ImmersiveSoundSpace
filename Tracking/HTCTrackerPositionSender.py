@@ -64,7 +64,7 @@ def main():
     # arguments parsing
     parser = argparse.ArgumentParser()
     parser.add_argument("--listeners", default="127.0.0.1:9001", help="The ip:port of the OSC programs listening, different listeners must be separated with ';', if multiple ports are used on one ip, it possible to use this form ip1:port1-1;port1-2;port1-3;ip2:port2-1;port2-2...")
-    parser.add_argument("--origin_serial", default="LHR-0EBE46E8", help="The serial number of the tracker used for origin calibration")
+    parser.add_argument("--origin_serial", default="LHR-01234567", help="The serial number of the tracker used for origin calibration")
     parser.add_argument("--framerate", type=int, default=30, help="Expected framerate - used to slow down OSC messages as UnityOSC can't handle more than 50 messages per second")
     parser.add_argument("--opengl", default=False, action="store_true", help="Use openGL coordinate system if set, or Unity coordinate system if not set")
     parser.add_argument("--steam", default=False, action="store_true", help="Open SteamVR when the script is launched")
