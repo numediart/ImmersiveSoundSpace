@@ -58,6 +58,6 @@ for /l %%i in (1, 1, %nb_scenes%) do (
 
 timeout /t 30
 :: start vive tracking
-echo python Tracking/HTCTrackerPositionSender.py --clients %clients% --origin_serial %origin_serial% --fps 20
-start cmd /C python Tracking/HTCTrackerPositionSender.py --clients %clients% --origin_serial %origin_serial% --fps 20
+echo python Tracking/HTCTrackerPositionSender.py --clients %clients% --origin_serial %origin_serial% --framerate 20
+start cmd /C python Tracking/HTCTrackerPositionSender.py --clients %clients% --origin_serial %origin_serial% --framerate 20
 endlocal
