@@ -89,12 +89,12 @@ public class MoveFromOSC : MonoBehaviour {
     {
         switch (mes.Address.ToString().ToLower())
         {
-            case "/vive/test":
+            case "/iss/test":
                 Debug.Log("test message received, " + int.Parse(mes.Data[0].ToString()) + " controllers detected");
                 messages.Add("test message received, ");
                 messages.Add(int.Parse(mes.Data[0].ToString()) + " controllers detected");
                 break;
-            case "/vive/tracker":
+            case "/iss/tracker":
                 string serial = mes.Data[0].ToString();
                 if (mes.Data.Count >= 8 && serialNumbertoFollow.Contains(serial))
                 {
