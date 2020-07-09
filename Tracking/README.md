@@ -23,17 +23,40 @@
 - Create a conda environment named iss with pip support:
 `conda create -n iss pip`
 - Then activate the newly created environment : `activate iss`
-- Install required dependancies :
-```
-pip install openvr
-pip install python-osc
-pip install numpy-quaternion
-pip install numba
-pip install scipy
-```
+- Install required dependancies : `pip install openvr python-osc numpy-quaternion numba scipy`   
+or cd to the *Tracking* folder and run `pip install -r requirements.txt`
 - Deactivate the environment : `conda deactivate`
-- cd to the 'calibrate.bat' folder
-- Try to launch the calibration script : `calibrate.bat`
+- cd to the root folder of this repo
+- To check that all libraries installed correctly, try to launch the calibration script : `calibrate.bat`. If no Vive Tracker is connected to the computer, you should see the following result:
+```
+Coordinate system is set for Unity
+Add OSC listener at 127.0.0.1:9001
+origin file not found at <<YOUR_PATH>>\ImmersiveSoundSpace\Tracking\origin_mat.rtm,  
+please place the reference and press 'o' key to set a new origin
+===========================
+Initialize OpenVR ... Impossible to intialize OpenVR
+```
+
+### Note on Python libs version
+We recommend to install the latest version available but, if for any reason the script doesn't work, try to downgrade the problematic library to the known working version.
+- openvr : 1.12
+- python-osc : 1.7.4
+- numpy-quaternion : 2020.5
+- numba : 0.50.1
+- scipy : 1.5.1
+
+## Get the Tracker Serial Number
+
+
+## Calibration
+You can use the *calibration.bat* script to create the calibration file (*Tracking/origin_mat.rtm*) that will next be used at each launch to set the origin and axes of your setup. 
+To do so :
+- In *calibrate.bat file*, @line 18, check that the serial number that will be used to set the origin (given after the `--origin_serial` option) is the same as one of your Vive Trackers.
+
+## First launch
+
+## Use with multiple Unity build instances
+
 
 ## Using the script alone
 - Plug in at least one of the USB dongles that comes with the HTC Vive Tracker

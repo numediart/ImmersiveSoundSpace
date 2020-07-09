@@ -132,7 +132,7 @@ def main():
         vrapplication_type = openvr.VRApplication_Scene
         print("open SteamVR")
     print("===========================")
-    print("Initialize OpenVR", end='')
+    print("Initialize OpenVR ... ", end='')
     try:
         openvr.init(vrapplication_type)
     except openvr.OpenVRError as e:
@@ -140,7 +140,7 @@ def main():
             print(e)
             exit(0)
     vrsystem = openvr.VRSystem()
-    print(" ... OK")
+    print("OK")
     print("===========================")
     
     program_t0 = time.time()
