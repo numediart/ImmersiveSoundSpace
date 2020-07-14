@@ -64,3 +64,5 @@ EventManager. The object this script is attached to will have a colored trail be
 A simple script to attach to and object with boxcollider and audio source that will play the audio file if the main camera point at the object for a certain period of time.
 
 
+
+

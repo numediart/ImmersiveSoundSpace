@@ -8,7 +8,7 @@ Some helpful tools to be used alongside this script can be found in this [other 
 In the UnityScripts folder, you will find... C# scripts for Unity. They are given here for convenience. See the folder [Readme](UnityScripts/README.md) for more information.
 
 At the root of the repo, you will find two batch (*.bat) scripts.
-To see how they work, please check the Tracking folder Readme for [calibration](Tracking/README.md#calibration) or [launch](Tracking/README.md#first-launch).
+To see how they work, please check the Tracking folder Readme for [calibration](Tracking/README.md#calibration) or [launch](Tracking/README.md#use-with-multiple-unity-build-instances).
 
 
 ## License

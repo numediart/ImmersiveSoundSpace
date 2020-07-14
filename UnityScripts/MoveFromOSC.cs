@@ -98,7 +98,7 @@ public class MoveFromOSC : MonoBehaviour {
                 string serial = mes.Data[0].ToString();
                 if (mes.Data.Count >= 8 && serialNumbertoFollow.Contains(serial))
                 {
-                    messages.Add("/vive/tracker message received, serial matches");
+                    messages.Add("/iss/tracker message received, serial matches");
                     pos.x = float.Parse(mes.Data[1].ToString());
                     pos.y = float.Parse(mes.Data[2].ToString());
                     pos.z = float.Parse(mes.Data[3].ToString());
