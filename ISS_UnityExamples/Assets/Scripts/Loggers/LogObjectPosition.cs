@@ -14,6 +14,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LogObjectPosition : MonoBehaviour {
 
@@ -24,6 +25,8 @@ public class LogObjectPosition : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        PositionLogger.Instance.Print(transform.position.ToString());
+        PositionLogger.Instance.Print("Scene : " + SceneManager.GetActiveScene().name + 
+            " - Chrono : [" + Chrono.TimeString + "]" +
+            " - Position : " + transform.position.ToString());
     }
 }

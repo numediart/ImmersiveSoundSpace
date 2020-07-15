@@ -81,7 +81,7 @@ public class PositionLogger : MonoBehaviour
             {
                 lines.RemoveAt(0);
             }
-            _textField.text = "Position :\n";
+            _textField.text = "";
             foreach (string l in lines)
             {
                 _textField.text += l;

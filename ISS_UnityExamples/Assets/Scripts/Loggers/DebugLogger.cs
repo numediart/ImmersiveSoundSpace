@@ -74,7 +74,7 @@ public class DebugLogger : MonoBehaviour {
 
     public void Print(string str)
     {
-        Debug.Log(str);
+        //Debug.Log(str);
         if(_textField)
         {
             lines.Add(str);

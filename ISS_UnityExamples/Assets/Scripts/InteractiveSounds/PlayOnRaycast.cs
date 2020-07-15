@@ -17,11 +17,11 @@ using UnityEngine;
 public class PlayOnRaycast : MonoBehaviour {
 
     /// Main camera.
-    public Camera mainCamera;
+    public Camera userCamera;
     public float stayTime;
     public float reenterTimeout;
 
-    new AudioSource audio;
+    private AudioSource[] sources;
 
     private bool currentlyHit;
     private bool previouslyHit;
@@ -31,34 +31,42 @@ public class PlayOnRaycast : MonoBehaviour {
     // Use this for initialization
     void Start () {
         //Fetch the AudioSource from the GameObject
-        audio = GetComponentsInChildren<AudioSource>()[0];
+        sources = GetComponentsInChildren<AudioSource>();
     }
 	
 	// Update is called once per frame
 	void Update () {
         // Raycast against the object.
-        Ray ray = mainCamera.ViewportPointToRay(0.5f * Vector2.one);
+        Ray ray = userCamera.ViewportPointToRay(0.5f * Vector2.one);
         RaycastHit hit;
         currentlyHit = Physics.Raycast(ray, out hit) && hit.transform == transform;
         if(currentlyHit)
         {
+            GetComponent<Renderer>().material.color = Color.red;
             if (!previouslyHit && Time.time - hitLeaveT0 > reenterTimeout)
             {
                 // entering target, reset hitEnter timer
                 hitEnterT0 = Time.time;
             }
 
-            if(Time.time - hitEnterT0 >= stayTime && !audio.isPlaying)
+            if(Time.time - hitEnterT0 >= stayTime && !sources[0].isPlaying)
             {
                 // on target for more than 'stayTime' seconds
-                audio.Play();
                 DebugLogger.Instance.Print("Play audio from " + this.name);
+                foreach (AudioSource source in sources)
+                {
+                    source.Play();
+                }
             }
         }
         else if(previouslyHit)
         {
             // leaving target
             hitLeaveT0 = Time.time;
+        }
+        else
+        {
+            GetComponent<Renderer>().material.color = Color.white;
         }
 
         previouslyHit = currentlyHit;
