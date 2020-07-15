@@ -45,9 +45,6 @@ public class MoveFromOSC : MonoBehaviour {
 
     // Update is called once per frame
     void Update () {
-        OSCHandler.Instance.UpdateLogs();
-        //HandlePacket(moveObjectServer.LastReceivedPacket);
-
         Vector3 correctedPosition = pos;
         correctedPosition.x *= posScaling.x;
         correctedPosition.y *= posScaling.y;
@@ -56,13 +53,16 @@ public class MoveFromOSC : MonoBehaviour {
         transform.position = correctedPosition;
         transform.rotation = quat;
 
-        if (messages.Count > 0)
-        {
-            foreach (string s in messages)
+        lock(messages)
+        { 
+            if (messages.Count > 0)
             {
-                OscLogger.Instance.Print(s);
+                foreach (string s in messages)
+                {
+                    OscLogger.Instance.Print(s);
+                }
+                messages.Clear();
             }
-            messages.Clear();
         }
     }
 
@@ -92,14 +92,20 @@ public class MoveFromOSC : MonoBehaviour {
         {
             case "/iss/test":
                 Debug.Log("test message received, " + int.Parse(mes.Data[0].ToString()) + " controllers detected");
-                messages.Add("test message received, ");
-                messages.Add(int.Parse(mes.Data[0].ToString()) + " controllers detected");
+                lock(messages)
+                {
+                    messages.Add("test message received, ");
+                    messages.Add(int.Parse(mes.Data[0].ToString()) + " controllers detected");
+                }
                 break;
             case "/iss/tracker":
                 string serial = mes.Data[0].ToString();
                 if (mes.Data.Count >= 8 && serialNumbertoFollow.Contains(serial))
                 {
-                    messages.Add("/iss/tracker message received, serial matches");
+                    lock(messages)
+                    {
+                        messages.Add("/iss/tracker message received, serial matches");
+                    }
                     pos.x = float.Parse(mes.Data[1].ToString());
                     pos.y = float.Parse(mes.Data[2].ToString());
                     pos.z = float.Parse(mes.Data[3].ToString());
