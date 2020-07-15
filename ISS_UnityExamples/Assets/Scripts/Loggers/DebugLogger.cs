@@ -20,8 +20,6 @@ using UnityEngine.UI;
 
 public class DebugLogger : MonoBehaviour {
 
-    public static Text debugConsole;
-
     #region Singleton Constructors
     static DebugLogger()
     {
@@ -38,7 +36,14 @@ public class DebugLogger : MonoBehaviour {
             if (_instance == null)
             {
                 _instance = new GameObject("DebugLogger").AddComponent<DebugLogger>();
-                _textField = debugConsole;
+                try
+                {
+                    _textField = GameObject.Find("DebugConsole").GetComponent<Text>();
+                }
+                catch(Exception e)
+                {
+                    Debug.Log(e);
+                }
                 if(_textField)
                     _logLength = 360 / (_textField.fontSize + _textField.lineSpacing);
             }

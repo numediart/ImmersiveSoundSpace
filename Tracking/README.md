@@ -199,7 +199,7 @@ Switch between Unity and OpenGl coordinate systems.
 Closes OpenVR cleanly and exit the script.
 
 ### OSC messages format
-If you plan to create your own listener, here is the definition of the OSC messages sent by the python script. There is a new message for each tracker, at each frame. That means, if your setup uses 3 trackers and `--framerate` option is set to 30, you will actually have to manage 90 OSC messages per second.
+If you plan to create your own listener, here is the definition of the OSC messages sent by the python script. There is a new message for each tracker, at each frame. That means, if your setup uses 3 trackers and `--framerate` option is set to 30, you will actually have to manage 90 OSC messages per second. 
 
 An example of a Processing sketch reading this OSC messages is given [in this other repo](https://github.com/numediart/ISS_Utils/tree/master/OSCListenerProcessing).
 

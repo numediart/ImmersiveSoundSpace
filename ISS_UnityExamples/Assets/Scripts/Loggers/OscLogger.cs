@@ -20,7 +20,6 @@ using UnityEngine.UI;
 
 public class OscLogger : MonoBehaviour
 {
-    public static Text oscConsole;
 
     #region Singleton Constructors
     static OscLogger()
@@ -38,8 +37,15 @@ public class OscLogger : MonoBehaviour
             if (_instance == null)
             {
                 _instance = new GameObject("OscLogger").AddComponent<OscLogger>();
-                _textField = oscConsole;
-                if(_textField)
+                try
+                {
+                    _textField = GameObject.Find("OscConsole").GetComponent<Text>();
+                }
+                catch (Exception e)
+                {
+                    Debug.Log(e);
+                }
+                if (_textField)
                 {
                     _logLength = 360 / (_textField.fontSize + _textField.lineSpacing);
                 }

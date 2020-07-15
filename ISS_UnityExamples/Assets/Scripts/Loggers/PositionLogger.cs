@@ -36,7 +36,14 @@ public class PositionLogger : MonoBehaviour
             if (_instance == null)
             {
                 _instance = new GameObject("PositionLogger").AddComponent<PositionLogger>();
-                _textField = GameObject.Find("PositionConsole").GetComponent<Text>();
+                try
+                {
+                    _textField = GameObject.Find("PositionConsole").GetComponent<Text>();
+                }
+                catch (Exception e)
+                {
+                    Debug.Log(e);
+                }
             }
 
             return _instance;
