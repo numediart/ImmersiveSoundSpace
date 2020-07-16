@@ -8,11 +8,19 @@
 ## Scenes
 
 ### SimpleScene
+A scene where a tracker moves the main camera. Use it to test if the tracking is correct and the communication with Unity is working.
+
 
 ### LoggerScene
+Same as SimpleScene, but with information displayed directly on the screen by using the Logger Scripts and a UI canvas. Optimized for 960 x 540 resolution (Quarter of a fullHD screen).
 
 ### InteractiveExampleScene
-
+Same as LoggerScene, plus an AudioScene, containing a [Google Resonance AudioRoom](https://resonance-audio.github.io/resonance-audio/develop/unity/developer-guide#room-effects-in-unity) and five GameObjects with [AudioSource](https://resonance-audio.github.io/resonance-audio/develop/unity/developer-guide#add-a-sound-source-to-your-scene). [[Sound files Credits](Assets/Sounds/Readme.md)]
+- *AmbianceAmbix* : An ambisonic soundfield. Sound by Joseph Anderson.
+- *Seagull* : A GameObject that will play seagull sound if looked at. Sound by poodaddy69.
+- *Whisper* : A GameObject that follow the user head and play whispering sounds 4.8 seconds after the launch. Sound by George Bullen.
+- *Steps* : A GameObject that will move through the scene at 28.4 seconds. Sound by falcospizaetus.
+- *MusicBox* : A GameObject that will follow a trajectory previously recorded in a csv file. Starts at 36 seconds. Sound by InspectorJ.
 
 
 ## Scripts
@@ -32,7 +40,7 @@ To use it inside the editor, create an empty GameObject with the script attached
 A utility that count time from the loading of the current scene. It is used to trigger audio play, trajectories and to get a timestamp on debug messages. It can be paused and resumed with `Chrono.Pause()` and `Chrono.Resume()`, and reset with `Chrono.ResetTimer()`.
 
 #### MoveFromOSC
-Script to attach to the main camera and every object that must follow a HTC Vive tracker. It will parse the OSC messages comming from the Python script and move the object they are attached to accordingly.
+Script to attach to the main camera and every object that must follow a HTC Vive tracker. It will parse the OSC messages comming from the Python script and move the object they are attached to accordingly. We recomend to add an offset of -0.15 on the Y axis for the MainCamera, so that it better follows the user's head.
 
 
 ### Loggers
@@ -67,12 +75,13 @@ A simple script to attach to and object with boxcollider and audio source that w
 Attached to the *Seagull* GameObject in the InteractiveExampleScene.
 
 #### PlayWithDelay
-Delay the playback of all AudioSources attached to the same GameObject.
+Delay the playback of all AudioSources attached to the same GameObject.  
+Attached to the *Whisper* GameObject in the InteractiveExampleScene.
 
 #### TrajectoryFromCheckpoints
 Allow you to create a path for the GameObject, by giving a list of 3D checkpoints and the last point of the trajectory. The GameObject will always be oriented toward the next point. The start time and the duration of the trajectory can be adjusted.  
 Attached to the *Steps* GameObject in the InteractiveExampleScene.
 
 #### TrajectoryFromFile
-A script to play back a .csv file created with [this tool](https://github.com/numediart/ISS_Utils/tree/master/SaveTrackerTrajectory). If the *Loop* option is activated, the trajectory will be played over a and over, but the sound will be played once only. If the *Ping Pong* option is activated, the trajectory will be played alternatively forward and backward.  
+A script to play back a Tracker trajectory .csv file created with [this tool](https://github.com/numediart/ISS_Utils/tree/master/SaveTrackerTrajectory). If the *Loop* option is activated, the trajectory will be played over a and over, but the sound will be played once only. If the *Ping Pong* option is activated, the trajectory will be played alternatively forward and backward.  
 Attached to the *MusicBox* GameObject in the InteractiveExampleScene.

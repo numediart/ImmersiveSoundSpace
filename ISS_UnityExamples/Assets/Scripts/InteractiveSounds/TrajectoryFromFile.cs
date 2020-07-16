@@ -23,6 +23,7 @@ public class TrajectoryFromFile : MonoBehaviour
     private int lineIndex;
     private float trajectoryDuration;
 
+    public bool relativeToPosInit;
     private Vector3 posInit;
 
     public float startTime;
@@ -89,7 +90,7 @@ public class TrajectoryFromFile : MonoBehaviour
                     {
                         valuesF[i - 1] = float.Parse(valuesStr[i], CultureInfo.InvariantCulture);
                     }
-                    transform.SetPositionAndRotation(new Vector3(valuesF[0], valuesF[1], valuesF[2]) + posInit,
+                    transform.SetPositionAndRotation(new Vector3(valuesF[0], valuesF[1], valuesF[2]) + (relativeToPosInit? posInit : new Vector3()),
                         new Quaternion(valuesF[3], valuesF[4], valuesF[5], valuesF[6]));
                 }
 

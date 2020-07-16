@@ -19,7 +19,7 @@ using UnityOSC;
 public class MoveFromOSC : MonoBehaviour {
 
     public string serialNumbertoFollow;
-    public Vector3 posInit;
+    public Vector3 posOffset;
     public Vector3 posScaling = new Vector3(1f, 1f, 1f);
 
     private Quaternion quat = new Quaternion();
@@ -49,7 +49,7 @@ public class MoveFromOSC : MonoBehaviour {
         correctedPosition.x *= posScaling.x;
         correctedPosition.y *= posScaling.y;
         correctedPosition.z *= posScaling.z;
-        correctedPosition += posInit;
+        correctedPosition += posOffset;
         transform.position = correctedPosition;
         transform.rotation = quat;
 

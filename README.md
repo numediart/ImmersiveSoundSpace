@@ -5,7 +5,7 @@ The cornerstone of this system is the HTC Tracker Position Sender Script in the 
 
 Some helpful tools to be used alongside this script can be found in this [other repo](https://github.com/numediart/ISS_Utils).
 
-In the UnityScripts folder, you will find... C# scripts for Unity. They are given here for convenience. See the folder [Readme](UnityScripts/README.md) for more information.
+In the UnityExample folder, you will find Unity scenes and C# scripts to listen the positions of the trackers and interact with the GameObjects in the scenes. See the folder [Readme](ISS_UnityExamples/Readme.md) for more information.
 
 At the root of the repo, you will find two batch (*.bat) scripts.
 To see how they work, please check the Tracking folder Readme for [calibration](Tracking/README.md#calibration) or [launch](Tracking/README.md#use-with-multiple-unity-build-instances).
