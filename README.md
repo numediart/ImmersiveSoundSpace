@@ -27,4 +27,4 @@ Each use of this software must be attributed to University of MONS – CLICK' Li
 ## Legal Notices
 This work was produced as part of the FEDER Digistorm project, co-financed by the European Union and the Wallonia Region.
 
-![Logo FEDER-FSE](https://www.enmieux.be/sites/all/themes/enmieux_theme/img/logo-feder-fse.png)
+![Logo FEDER-FSE](https://www.enmieux.be/sites/default/files/assets/media-files/signatures/vignette_FEDER%2Bwallonie.png)
