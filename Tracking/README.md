@@ -18,13 +18,12 @@
 - Restart SteamVR
 
 ## Installation
-- Install [Anaconda](https://www.anaconda.com/distribution/#download-section) with python 3.X
+- Install [Anaconda](https://www.anaconda.com/distribution/#download-section) with python 3.X (known to work with python 3.7.x and 3.8.1)
 - [Open a command prompt window](https://www.thewindowsclub.com/how-to-open-command-prompt-from-right-click-menu) (not a PowerShell window)
 - Create a conda environment named iss with pip support:
-`conda create -n iss pip`
+`conda create -n iss pip python=3.8.1`
 - Then activate the newly created environment : `activate iss`
-- Install required dependancies : `pip install openvr python-osc numpy-quaternion numba scipy`   
-or cd to the *Tracking* folder and run `pip install -r requirements.txt`
+- cd to the *Tracking* folder and run `pip install -r requirements.txt`
 - Deactivate the environment : `conda deactivate`
 - cd to the root folder of this repo
 - To check that all libraries installed correctly, try to launch the calibration script : `calibrate.bat`. If no Vive tracker USB dongle is connected to the computer, you should see the following result:
@@ -38,7 +37,7 @@ Initialize OpenVR ... Impossible to intialize OpenVR
 ```
 
 ### Note on Python libs version
-We recommend to install the latest version available but, if for any reason the script doesn't work, try to downgrade the problematic library to the known working version.
+If for any reason the script doesn't work, try to downgrade the problematic library to the known working version.
 - openvr : 1.12
 - python-osc : 1.7.4
 - numpy-quaternion : 2020.5
