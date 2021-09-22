@@ -68,6 +68,7 @@ def main():
     parser.add_argument("--framerate", type=int, default=30, help="Expected framerate - used to slow down OSC messages as UnityOSC can't handle more than 50 messages per second")
     parser.add_argument("--opengl", default=False, action="store_true", help="Use openGL coordinate system if set, or Unity coordinate system if not set")
     parser.add_argument("--steam", default=False, action="store_true", help="Open SteamVR when the script is launched")
+    parser.add_argument("--oscpattern", default="/iss/tracker", help="The OSC pattern used to send messages, default is '/iss/tracker'")
     args = parser.parse_args()
     
     
@@ -109,6 +110,7 @@ def main():
         print("Add OSC listener at {0}:{1}".format(ip, port))
         listeners.append(udp_client.SimpleUDPClient(ip, port))
 
+    print("OSC pattern : " + args.oscpattern)
 
     # load last origin matrix from origin_mat.rtm file, 
     # the file must be located in the same folder as this script
@@ -219,7 +221,7 @@ def main():
         # send osc content to all listeners if needed
         for c in osc_content:
             for l in listeners:
-                l.send_message("/iss/tracker", c)
+                l.send_message(args.oscpattern, c)
        
         #calulate fps
         fps = 0.0
