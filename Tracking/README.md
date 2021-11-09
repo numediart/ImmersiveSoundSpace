@@ -19,6 +19,7 @@
 
 ## Installation
 - Install [Anaconda](https://www.anaconda.com/distribution/#download-section) with python 3.X (known to work with python 3.7.x and 3.8.1)
+    - **Important !** Tick the option to add Anaconda to your system Path during the installation
 - [Open a command prompt window](https://www.thewindowsclub.com/how-to-open-command-prompt-from-right-click-menu) (not a PowerShell window)
 - Create a conda environment named iss with pip support:
 `conda create -n iss pip python=3.8.1`
