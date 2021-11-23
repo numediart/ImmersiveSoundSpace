@@ -1,11 +1,11 @@
 using Mirror;
 
-public class PlayerTrackerIdSender : NetworkBehaviour 
+public class PlayerTrackerIdSender : NetworkBehaviour
 {
-    [Client]
-    private void Start() 
+    [ClientCallback]
+    private void Start()
     {
-        if(!isLocalPlayer) return;
+        if (!isLocalPlayer) return;
 
         var trackerId = CommandLineParser.trackerSerial;
         Send(netId, trackerId);
@@ -15,5 +15,11 @@ public class PlayerTrackerIdSender : NetworkBehaviour
     private void Send(uint playerNetworkId, string trackerId)
     {
         PlayerManager.Instance.BindPlayerToTracker(playerNetworkId, trackerId);
+    }
+
+    [ServerCallback]
+    private void OnDestroy()
+    {
+        PlayerManager.Instance.Disconnect(netId);
     }
 }

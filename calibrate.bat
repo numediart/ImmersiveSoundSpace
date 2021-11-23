@@ -15,4 +15,4 @@
 :: set anaconda environment for the python script
 call activate iss
 
-python Tracking/HTCTrackerPositionSender.py --origin_serial LHR-10B2A5DE --framerate 80 --listeners 127.0.0.1:9001
+python Tracking/HTCTrackerPositionSender.py --origin_serial LHR-CDB20E24 --framerate 80 --listeners 127.0.0.1:9001
