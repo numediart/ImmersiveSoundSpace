@@ -145,11 +145,11 @@ def main():
     print("OK")
     print("===========================")
     
-    program_t0 = time.time()
+    program_t0 = time.perf_counter()
     while(not escape):
     
         # keep track of loop time
-        loop_t0 = time.time()
+        loop_t0 = time.perf_counter()
         t0_list.append(loop_t0)
         if len(t0_list) >= t0_list_max_size:
             del t0_list[0]
@@ -229,9 +229,10 @@ def main():
            fps = len(t0_list) / (t0_list[-1] - t0_list[0])
         # update state display
         print("\rtime : {0:8.1f}, fps : {1:4.1f}, nb trackers : {2}        ".format(loop_t0 - program_t0, fps, len(osc_content)), end="") 
-            
+        
         # ensure fps is respected to avoid OSC messages queue overflow
-        time.sleep(max(1.0 / args.framerate - (time.time() - loop_t0), 0))
+        while time.perf_counter() - loop_t0 <= 1.0 / args.framerate:
+            pass
 
 
 
