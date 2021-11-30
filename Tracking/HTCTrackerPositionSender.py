@@ -29,7 +29,7 @@ import numpy as np
 import quaternion
 
 # communication to other programs (OSC)
-from pythonosc import udp_client, osc_message_builder
+from pythonosc import udp_client, osc_message_builder, osc_bundle_builder
 
 # load / save origin matrix
 from pathlib import Path
@@ -65,10 +65,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--listeners", default="127.0.0.1:9001", help="The ip:port of the OSC programs listening, different listeners must be separated with ';', if multiple ports are used on one ip, it possible to use this form ip1:port1-1;port1-2;port1-3;ip2:port2-1;port2-2...")
     parser.add_argument("--origin_serial", default="LHR-01234567", help="The serial number of the tracker used for origin calibration")
-    parser.add_argument("--framerate", type=int, default=30, help="Expected framerate - used to slow down OSC messages as UnityOSC can't handle more than 50 messages per second")
+    parser.add_argument("--framerate", type=int, default=60, help="Expected framerate - used to slow down OSC messages if OSC listener can't handle the framerate")
     parser.add_argument("--opengl", default=False, action="store_true", help="Use openGL coordinate system if set, or Unity coordinate system if not set")
     parser.add_argument("--steam", default=False, action="store_true", help="Open SteamVR when the script is launched")
     parser.add_argument("--oscpattern", default="/iss/tracker", help="The OSC pattern used to send messages, default is '/iss/tracker'")
+    parser.add_argument("--bundles", default=False, action="store_true", help="Send single frame messages as a OSC bundle")
     args = parser.parse_args()
     
     
@@ -111,6 +112,11 @@ def main():
         listeners.append(udp_client.SimpleUDPClient(ip, port))
 
     print("OSC pattern : " + args.oscpattern)
+    
+    send_bundles = "Send separate OSC messages for each tracker"
+    if args.bundles:
+        send_bundles = "Send simultaneous tracker OSC messages as bundles"
+    print(send_bundles)
 
     # load last origin matrix from origin_mat.rtm file, 
     # the file must be located in the same folder as this script
@@ -219,9 +225,19 @@ def main():
                 trackers_list.remove(t)
         
         # send osc content to all listeners if needed
-        for c in osc_content:
-            for l in listeners:
-                l.send_message(args.oscpattern, c)
+        for l in listeners:
+            if args.bundles:
+                bundle_builder = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
+                for c in osc_content:
+                    msg = osc_message_builder.OscMessageBuilder(address=args.oscpattern)
+                    for oscarg in c:
+                        msg.add_arg(oscarg)
+                    bundle_builder.add_content(msg.build())
+                l.send(bundle_builder.build())
+            else:
+                for c in osc_content:
+                    l.send_message(args.oscpattern, c)
+
        
         #calulate fps
         fps = 0.0
