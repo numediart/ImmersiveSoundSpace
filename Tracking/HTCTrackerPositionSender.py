@@ -35,6 +35,9 @@ from pythonosc import udp_client, osc_message_builder, osc_bundle_builder
 from pathlib import Path
 import pickle
 
+# load real world points coordinates for multi-points calibration
+import json
+
 
 
 
@@ -64,7 +67,8 @@ def main():
     # arguments parsing
     parser = argparse.ArgumentParser()
     parser.add_argument("--listeners", default="127.0.0.1:9001", help="The ip:port of the OSC programs listening, different listeners must be separated with ';', if multiple ports are used on one ip, it possible to use this form ip1:port1-1;port1-2;port1-3;ip2:port2-1;port2-2...")
-    parser.add_argument("--origin_serial", default="LHR-01234567", help="The serial number of the tracker used for origin calibration")
+    parser.add_argument("--origin_serial", default=None, help="The serial number of the tracker used for origin calibration")
+    parser.add_argument("--real_world_points", default=None, help="The JSON file containing list of points to use for origin calibration")
     parser.add_argument("--framerate", type=int, default=60, help="Expected framerate - used to slow down OSC messages if OSC listener can't handle the framerate")
     parser.add_argument("--opengl", default=False, action="store_true", help="Use openGL coordinate system if set, or Unity coordinate system if not set")
     parser.add_argument("--steam", default=False, action="store_true", help="Open SteamVR when the script is launched")
@@ -76,18 +80,26 @@ def main():
     # global program variables
     listeners = []     # array of OSC clients
     origin_serial = args.origin_serial
+    real_world_points = []
+    current_point_index = -1
+    calib_points = []
     origin_mat_inv = np.identity(4)
     # booleans for keystroke interactions
     to_unity_world = True # can be modified by --opengl option or 'u' key
     set_origin = False # change state with 'o' key
+    calib_next_point = False
     escape = False # change state with 'escape' key
     # filter used to smooth framerate computation for display
     t0_list = []
-    t0_list_max_size = 60
+    t0_list_max_size = args.framerate / 2
     # array of ids of currently tracked trackers (used to identify newly tracked trackers)
     trackers_list = []
 
-
+    print("======================================")
+    print("")
+    print("---------------------------------------")
+    print("   Coordinate system and calibration   ")
+    print("---------------------------------------")
     # if --opengl option is used, compute coordinates for opengl coordinate system
     # if not, compute for Unity coordinate system
     to_unity_world = not args.opengl
@@ -95,7 +107,35 @@ def main():
     if not to_unity_world :
         coordsys = "OpenGL"
     print("Coordinate system is set for {0}".format(coordsys))
+    
+    # load last origin matrix from origin_mat.rtm file, 
+    # the file must be located in the same folder as this script
+    origin_file_path = os.path.dirname(os.path.abspath(__file__))+"\origin_mat.rtm"
+    #print("try to open origin file at {0}".format(origin_file_path))
+    origin_file = Path(origin_file_path)
+    if origin_file.exists():
+        with open(origin_file_path, 'rb') as loaded_file:
+            depickler = pickle.Unpickler(loaded_file)
+            origin_mat_inv = depickler.load()
+            print("origin loaded from file " + origin_file_path)
+            #print(origin_mat_inv)
+    else:
+        print("origin file not found at " + origin_file_path + ", please place the reference and press 'o' key to set a new origin")
 
+    if origin_serial:
+        print("Calibration can be done with tracker serial " + origin_serial)
+        fp = open(args.real_world_points, 'r')
+        if fp:
+            real_world_points = json.load(fp)
+            print("Load real world points from JSON file for calibration")
+            print(json.dumps(real_world_points, indent=4))
+            print(len(real_world_points))
+    
+    
+    print("")
+    print("---------------------------------------")
+    print("             OSC parameters            ")
+    print("---------------------------------------")
     # parse the ip and ports from listeners and create OSC clients
     listeners_str = args.listeners.split(";")
     overall_ip = "127.0.0.1"
@@ -118,20 +158,11 @@ def main():
         send_bundles = "Send simultaneous tracker OSC messages as bundles"
     print(send_bundles)
 
-    # load last origin matrix from origin_mat.rtm file, 
-    # the file must be located in the same folder as this script
-    origin_file_path = os.path.dirname(os.path.abspath(__file__))+"\origin_mat.rtm"
-    #print("try to open origin file at {0}".format(origin_file_path))
-    origin_file = Path(origin_file_path)
-    if origin_file.exists():
-        with open(origin_file_path, 'rb') as loaded_file:
-            depickler = pickle.Unpickler(loaded_file)
-            origin_mat_inv = depickler.load()
-            print("origin loaded from file " + origin_file_path)
-            #print(origin_mat_inv)
-    else:
-        print("origin file not found at " + origin_file_path + ", please place the reference and press 'o' key to set a new origin")
 
+    print("")
+    print("---------------------------------------")
+    print("                 OpenVR                ")
+    print("---------------------------------------")
     # init OpenVR
     # VRApplication_Other will not open SteamVR
     # VRApplication_Scene will open SteamVR
@@ -139,7 +170,6 @@ def main():
     if args.steam:
         vrapplication_type = openvr.VRApplication_Scene
         print("open SteamVR")
-    print("===========================")
     print("Initialize OpenVR ... ", end='')
     try:
         openvr.init(vrapplication_type)
@@ -149,7 +179,8 @@ def main():
             exit(0)
     vrsystem = openvr.VRSystem()
     print("OK")
-    print("===========================")
+    print("======================================")
+    print("")
     
     program_t0 = time.perf_counter()
     while(not escape):
@@ -167,6 +198,13 @@ def main():
                 # set up origin
                 set_origin = True
                 print("\nset new origin : ")
+                if real_world_points:
+                    current_point_index = -1
+                    print("Multi-points calibration")
+                    calib_next_point = True
+            elif key == ord('n'):
+                calib_next_point = True
+                
             elif key == ord('r'):
                 print("\nreset origin")
                 origin_mat_inv = np.identity(4)
@@ -205,19 +243,41 @@ def main():
                     for y in range (0,3):
                         m_rot[x][y] = m_corrected[x][y]
                 quat = quaternion.from_rotation_matrix(m_rot)
+                
                 # append computed pos/rot to the list in opengl or unity coordinate system
                 content = [tracker_id, m_corrected[0][3], m_corrected[1][3], m_corrected[2][3], quat.x, quat.y, quat.z, quat.w]
                 if to_unity_world:
                     content = [tracker_id, -m_corrected[0][3], -m_corrected[2][3], m_corrected[1][3], quat.x, quat.z, -quat.y, quat.w]
                 osc_content.append(content)
+                
                 # set new origin if requested
                 if vrsystem.getStringTrackedDeviceProperty(_i, openvr.Prop_SerialNumber_String) == origin_serial and set_origin:
-                    set_origin = False
-                    origin_mat_inv = np.linalg.inv(m_4x4)
-                    with open(origin_file_path, 'wb') as saved_file:
-                        pickler = pickle.Pickler(saved_file)
-                        pickler.dump(origin_mat_inv)
-                    print(m_4x4)
+                    # perform multi-points calibration
+                    if real_world_points:
+                        if calib_next_point:
+                            if current_point_index < len(real_world_points) - 1:
+                                print("Place your origin tracker on point")
+                                print(real_world_points[current_point_index+1])
+                                print("and press 'n'")
+                            if current_point_index < 0:
+                                pass
+                            else:
+                                openvr_pt = m_4x4[0:3,3]
+                                calib_points.append(openvr_pt)
+                            calib_next_point = False
+                            current_point_index = current_point_index + 1
+                            if current_point_index >= len(real_world_points):
+                                print("Computing calibration with points")
+                                print(calib_points)
+                            
+                    # perform single point calibration (e.g, tracker position is origin)
+                    else:
+                        set_origin = False
+                        origin_mat_inv = np.linalg.inv(m_4x4)
+                        with open(origin_file_path, 'wb') as saved_file:
+                            pickler = pickle.Pickler(saved_file)
+                            pickler.dump(origin_mat_inv)
+                        print(m_4x4)
         # remove trackers that are not tracked any more
         for t in trackers_list:
             if t not in current_loop_trackers_list:
@@ -240,11 +300,12 @@ def main():
 
        
         #calulate fps
-        fps = 0.0
+        fps = 0
         if len(t0_list) > 1:
            fps = len(t0_list) / (t0_list[-1] - t0_list[0])
         # update state display
-        print("\rtime : {0:8.1f}, fps : {1:4.1f}, nb trackers : {2}        ".format(loop_t0 - program_t0, fps, len(osc_content)), end="") 
+        if (not set_origin):
+            print("\rtime : {0:8.1f}, fps : {1:4.1f}, nb trackers : {2}        ".format(loop_t0 - program_t0, fps, len(osc_content)), end="") 
         
         # ensure fps is respected to avoid OSC messages queue overflow
         while time.perf_counter() - loop_t0 <= 1.0 / args.framerate:
