@@ -27,6 +27,7 @@ import openvr
 # math utils to change axes origin
 import numpy as np
 import quaternion
+import cv2
 
 # communication to other programs (OSC)
 from pythonosc import udp_client, osc_message_builder, osc_bundle_builder
@@ -81,9 +82,10 @@ def main():
     listeners = []     # array of OSC clients
     origin_serial = args.origin_serial
     real_world_points = []
+    real_world_points_array = []
     current_point_index = -1
     calib_points = []
-    origin_mat_inv = np.identity(4)
+    calib_mat = np.identity(4)
     # booleans for keystroke interactions
     to_unity_world = True # can be modified by --opengl option or 'u' key
     set_origin = False # change state with 'o' key
@@ -116,20 +118,33 @@ def main():
     if origin_file.exists():
         with open(origin_file_path, 'rb') as loaded_file:
             depickler = pickle.Unpickler(loaded_file)
-            origin_mat_inv = depickler.load()
+            calib_mat = depickler.load()
             print("origin loaded from file " + origin_file_path)
-            #print(origin_mat_inv)
+            #print(calib_mat)
     else:
         print("origin file not found at " + origin_file_path + ", please place the reference and press 'o' key to set a new origin")
 
     if origin_serial:
         print("Calibration can be done with tracker serial " + origin_serial)
-        fp = open(args.real_world_points, 'r')
-        if fp:
+        if args.real_world_points:
+            fp = open(args.real_world_points, 'r')
             real_world_points = json.load(fp)
-            print("Load real world points from JSON file for calibration")
-            print(json.dumps(real_world_points, indent=4))
-            print(len(real_world_points))
+            if len(real_world_points) < 4:
+                real_world_points = None
+                print("Calibration file must contain at least 4 points")
+            else:
+                print("Load real world points from JSON file for calibration")
+                real_world_points_array = np.zeros((len(real_world_points), 3), np.float32)
+                for i, pt in enumerate(real_world_points):
+                    if to_unity_world:
+                        real_world_points_array[i][0] = -pt['x']
+                        real_world_points_array[i][1] = -pt['z']
+                        real_world_points_array[i][2] =  pt['y']
+                    else:
+                        real_world_points_array[i][0] =  pt['x']
+                        real_world_points_array[i][1] =  pt['y']
+                        real_world_points_array[i][2] =  pt['z']
+                print(real_world_points_array)
     
     
     print("")
@@ -195,19 +210,20 @@ def main():
         key = kbfunc()
         if key != 0:
             if key == ord('o'):
-                # set up origin
-                set_origin = True
-                print("\nset new origin : ")
-                if real_world_points:
-                    current_point_index = -1
-                    print("Multi-points calibration")
-                    calib_next_point = True
+                if origin_serial:
+                    # set up origin
+                    set_origin = True
+                    print("\nset new origin : ")
+                    if real_world_points:
+                        current_point_index = -1
+                        print("Multi-points calibration")
+                        calib_next_point = True
             elif key == ord('n'):
                 calib_next_point = True
                 
             elif key == ord('r'):
                 print("\nreset origin")
-                origin_mat_inv = np.identity(4)
+                calib_mat = np.identity(4)
             elif key == ord('u'):
                 to_unity_world = not to_unity_world
                 print("\nto unity world = {0}".format(to_unity_world))
@@ -237,23 +253,25 @@ def main():
                     print("\nNew tracker found : {}".format(trackers_list[-1]))
                 # compute relative position (vector3) and rotation(quaternion) from 3x4 openvr matrix
                 m_4x4 = vive_pose_to_numpy_matrix_4x4(device.mDeviceToAbsoluteTracking)
-                m_corrected = np.matmul(origin_mat_inv, m_4x4)
+                m_corrected = np.matmul(calib_mat, m_4x4)
+                
                 m_rot = np.identity(3);
                 for x in range(0,3):
                     for y in range (0,3):
                         m_rot[x][y] = m_corrected[x][y]
                 quat = quaternion.from_rotation_matrix(m_rot)
                 
-                # append computed pos/rot to the list in opengl or unity coordinate system
+                # append computed pos/rot to the list
                 content = [tracker_id, m_corrected[0][3], m_corrected[1][3], m_corrected[2][3], quat.x, quat.y, quat.z, quat.w]
                 if to_unity_world:
+                    # switch and invert coordinates if Unity coordinate system is required
                     content = [tracker_id, -m_corrected[0][3], -m_corrected[2][3], m_corrected[1][3], quat.x, quat.z, -quat.y, quat.w]
                 osc_content.append(content)
                 
                 # set new origin if requested
                 if vrsystem.getStringTrackedDeviceProperty(_i, openvr.Prop_SerialNumber_String) == origin_serial and set_origin:
                     # perform multi-points calibration
-                    if real_world_points:
+                    if len(real_world_points) >= 4:
                         if calib_next_point:
                             if current_point_index < len(real_world_points) - 1:
                                 print("Place your origin tracker on point")
@@ -267,17 +285,23 @@ def main():
                             calib_next_point = False
                             current_point_index = current_point_index + 1
                             if current_point_index >= len(real_world_points):
-                                print("Computing calibration with points")
-                                print(calib_points)
+                                calib_points =  np.stack(calib_points)
+                                print("Computing calibration with {} points".format(len(real_world_points)))
+                                retval, M, inliers = cv2.estimateAffine3D(calib_points, real_world_points_array)
+                                calib_mat = np.vstack([M, [0, 0, 0, 1]])
+                                with open(origin_file_path, 'wb') as saved_file:
+                                    pickler = pickle.Pickler(saved_file)
+                                    pickler.dump(calib_mat)
+                                print(calib_mat.round(3))
                             
-                    # perform single point calibration (e.g, tracker position is origin)
+                    # perform single point calibration (e.g, tracker position is origin, rotation matters)
                     else:
                         set_origin = False
-                        origin_mat_inv = np.linalg.inv(m_4x4)
+                        calib_mat = np.linalg.inv(m_4x4)
                         with open(origin_file_path, 'wb') as saved_file:
                             pickler = pickle.Pickler(saved_file)
-                            pickler.dump(origin_mat_inv)
-                        print(m_4x4)
+                            pickler.dump(calib_mat)
+                        print(calib_mat)
         # remove trackers that are not tracked any more
         for t in trackers_list:
             if t not in current_loop_trackers_list:
