@@ -136,15 +136,20 @@ def main():
                 print("Load real world points from JSON file for calibration")
                 real_world_points_array = np.zeros((len(real_world_points), 3), np.float32)
                 for i, pt in enumerate(real_world_points):
+                    
                     if to_unity_world:
                         real_world_points_array[i][0] = -pt['x']
-                        real_world_points_array[i][1] = -pt['z']
-                        real_world_points_array[i][2] =  pt['y']
+                        real_world_points_array[i][1] =  pt['z']
+                        real_world_points_array[i][2] = -pt['y']
                     else:
                         real_world_points_array[i][0] =  pt['x']
                         real_world_points_array[i][1] =  pt['y']
                         real_world_points_array[i][2] =  pt['z']
-                print(real_world_points_array)
+                    print("[{0}] : {1:3.2f}, {2:3.2f}, {3:3.2f}".format(pt['id'], 
+                        real_world_points_array[i][0], 
+                        real_world_points_array[i][1], 
+                        real_world_points_array[i][2]))
+                #print(real_world_points_array)
     
     
     print("")
@@ -218,6 +223,8 @@ def main():
                         current_point_index = -1
                         print("Multi-points calibration")
                         calib_next_point = True
+                    else:
+                        print("Single point calibration")
             elif key == ord('n'):
                 calib_next_point = True
                 
@@ -293,6 +300,7 @@ def main():
                                     pickler = pickle.Pickler(saved_file)
                                     pickler.dump(calib_mat)
                                 print(calib_mat.round(3))
+                                set_origin = False
                             
                     # perform single point calibration (e.g, tracker position is origin, rotation matters)
                     else:
@@ -301,7 +309,7 @@ def main():
                         with open(origin_file_path, 'wb') as saved_file:
                             pickler = pickle.Pickler(saved_file)
                             pickler.dump(calib_mat)
-                        print(calib_mat)
+                        print(calib_mat.round(3))
         # remove trackers that are not tracked any more
         for t in trackers_list:
             if t not in current_loop_trackers_list:
