@@ -62,6 +62,15 @@ def vive_pose_to_numpy_matrix_4x4(vive_pos):
     return m_4x4
     
 
+# https://stackoverflow.com/questions/9608148/python-script-to-determine-if-x-y-coordinates-are-colinear-getting-some-e
+# distributed under the terms of CC BY-SA 3.0
+def collinear(p0, p1, p2):
+    x1, y1 = p1[0] - p0[0], p1[1] - p0[1]
+    x2, y2 = p2[0] - p0[0], p2[1] - p0[1]
+    return abs(x1 * y2 - x2 * y1) < 1e-12
+    
+    
+    
 
 def main():
 
@@ -166,6 +175,8 @@ def main():
                     A = real_world_points_array[0]
                     B = real_world_points_array[1]
                     C = real_world_points_array[2]
+                    if collinear(A, B, C):
+                        print("ERROR : the 3 first points in real_world_points JSON file must not be aligned");
                     virtual_point = A + np.cross(np.subtract(B, A), np.subtract(C, A))
                     real_world_points_array = np.vstack([real_world_points_array, virtual_point])
                     print("[{0}] : {1:3.2f}, {2:3.2f}, {3:3.2f}".format('virtual point', 
