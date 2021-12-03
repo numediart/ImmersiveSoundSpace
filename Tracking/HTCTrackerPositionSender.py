@@ -60,7 +60,7 @@ def vive_pose_to_numpy_matrix_4x4(vive_pos):
             m_4x4[x][y] = vive_pos[x][y]
     
     return m_4x4
-
+    
 
 
 def main():
@@ -71,7 +71,7 @@ def main():
     parser.add_argument("--origin_serial", default=None, help="The serial number of the tracker used for origin calibration")
     parser.add_argument("--real_world_points", default=None, help="The JSON file containing list of points to use for origin calibration")
     parser.add_argument("--framerate", type=int, default=60, help="Expected framerate - used to slow down OSC messages if OSC listener can't handle the framerate")
-    parser.add_argument("--opengl", default=False, action="store_true", help="Use openGL coordinate system if set, or Unity coordinate system if not set")
+    parser.add_argument("--openvr_coordinates", default=False, action="store_true", help="Use openVR native coordinate system if set, or Unity coordinate system if not set")
     parser.add_argument("--steam", default=False, action="store_true", help="Open SteamVR when the script is launched")
     parser.add_argument("--oscpattern", default="/iss/tracker", help="The OSC pattern used to send messages, default is '/iss/tracker'")
     parser.add_argument("--bundles", default=False, action="store_true", help="Send single frame messages as a OSC bundle")
@@ -83,11 +83,12 @@ def main():
     origin_serial = args.origin_serial
     real_world_points = []
     real_world_points_array = []
+    different_h = False # to check if all points are at the same height
     current_point_index = -1
     calib_points = []
     calib_mat = np.identity(4)
     # booleans for keystroke interactions
-    to_unity_world = True # can be modified by --opengl option or 'u' key
+    to_unity_world = True # can be modified by --openvr_coordinates option or 'u' key
     set_origin = False # change state with 'o' key
     calib_next_point = False
     escape = False # change state with 'escape' key
@@ -102,12 +103,12 @@ def main():
     print("---------------------------------------")
     print("   Coordinate system and calibration   ")
     print("---------------------------------------")
-    # if --opengl option is used, compute coordinates for opengl coordinate system
+    # if --openvr_coordinates option is used, compute coordinates for openvr coordinate system
     # if not, compute for Unity coordinate system
-    to_unity_world = not args.opengl
+    to_unity_world = not args.openvr_coordinates
     coordsys = "Unity"
     if not to_unity_world :
-        coordsys = "OpenGL"
+        coordsys = "openVR"
     print("Coordinate system is set for {0}".format(coordsys))
     
     # load last origin matrix from origin_mat.rtm file, 
@@ -135,8 +136,9 @@ def main():
             else:
                 print("Load real world points from JSON file for calibration")
                 real_world_points_array = np.zeros((len(real_world_points), 3), np.float32)
-                for i, pt in enumerate(real_world_points):
-                    
+                different_h = False
+                last_h = None
+                for i, pt in enumerate(real_world_points):         
                     if to_unity_world:
                         real_world_points_array[i][0] = -pt['x']
                         real_world_points_array[i][1] =  pt['z']
@@ -145,11 +147,31 @@ def main():
                         real_world_points_array[i][0] =  pt['x']
                         real_world_points_array[i][1] =  pt['y']
                         real_world_points_array[i][2] =  pt['z']
+                    # check if there is at least one point outside of floor plan
+                    h = real_world_points_array[i][2]
+                    if last_h is None:
+                        last_h = h
+                    if last_h != h:
+                        different_h = True
+                    last_h = h
+                    
                     print("[{0}] : {1:3.2f}, {2:3.2f}, {3:3.2f}".format(pt['id'], 
                         real_world_points_array[i][0], 
                         real_world_points_array[i][1], 
                         real_world_points_array[i][2]))
-                #print(real_world_points_array)
+                # if all points are at the same height, 
+                # create a virtual point and append it to the array
+                if not different_h:
+                    print("All points are at the same height, creating a virtual point for calibration")
+                    A = real_world_points_array[0]
+                    B = real_world_points_array[1]
+                    C = real_world_points_array[2]
+                    virtual_point = A + np.cross(np.subtract(B, A), np.subtract(C, A))
+                    real_world_points_array = np.vstack([real_world_points_array, virtual_point])
+                    print("[{0}] : {1:3.2f}, {2:3.2f}, {3:3.2f}".format('virtual point', 
+                        virtual_point[0], 
+                        virtual_point[1], 
+                        virtual_point[2]))
     
     
     print("")
@@ -292,8 +314,16 @@ def main():
                             calib_next_point = False
                             current_point_index = current_point_index + 1
                             if current_point_index >= len(real_world_points):
-                                calib_points =  np.stack(calib_points)
                                 print("Computing calibration with {} points".format(len(real_world_points)))
+                                calib_points =  np.stack(calib_points)
+                                if not different_h:
+                                    print("All real world points are at same height, creating virtual point")
+                                    A = calib_points[0]
+                                    B = calib_points[1]
+                                    C = calib_points[2]
+                                    virtual_calib_point = A + np.cross(np.subtract(B, A), np.subtract(C, A))
+                                    calib_points = np.vstack([calib_points, virtual_calib_point])
+                                
                                 retval, M, inliers = cv2.estimateAffine3D(calib_points, real_world_points_array)
                                 calib_mat = np.vstack([M, [0, 0, 0, 1]])
                                 with open(origin_file_path, 'wb') as saved_file:
