@@ -41,6 +41,10 @@ public class MoveFromOSC : MonoBehaviour {
                 Debug.Log("Server found : " + moveObjectServer.ToString());
             }
         }
+        if(tag == "MonoPlayer" && CommandLineParser.trackerSerial != "" && CommandLineParser.trackerSerial != null)
+        {
+            serialNumbertoFollow = CommandLineParser.trackerSerial;
+        }
     }
 
     // Update is called once per frame
@@ -106,6 +110,7 @@ public class MoveFromOSC : MonoBehaviour {
                     {
                         messages.Add("/iss/tracker message received, serial matches");
                     }
+
                     pos.x = float.Parse(mes.Data[1].ToString());
                     pos.y = float.Parse(mes.Data[2].ToString());
                     pos.z = float.Parse(mes.Data[3].ToString());

@@ -15,10 +15,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 public class CommandLineParser : MonoBehaviour
 {
     public static string trackerSerial; // The serial number of the Vive Tracker attached to the headphones (will move the mainaudioListener)
+    public static int oscPort;
 
     public static GameObject instance;
 
@@ -45,6 +47,11 @@ public class CommandLineParser : MonoBehaviour
                 case "-t":
                     trackerSerial = args[i + 1];
                     Debug.Log("Got Tracker Serial from command line : " + trackerSerial);
+                    break;
+                case "--port":
+                case "-p":
+                    oscPort = Int32.Parse(args[i + 1]);
+                    Debug.Log("Got OSC port to listen from command line : " + oscPort);
                     break;
                 default:
                     break;

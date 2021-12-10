@@ -6,6 +6,7 @@ TagManager:
   tags:
   - MirrorClient
   - ViveTracker
+  - MonoPlayer
   layers:
   - Default
   - TransparentFX

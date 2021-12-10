@@ -362,7 +362,7 @@ GameObject:
   - component: {fileID: 7319632568374847441}
   - component: {fileID: 9038027373588225991}
   m_Layer: 0
-  m_Name: Player
+  m_Name: NetworkPlayer
   m_TagString: MirrorClient
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
