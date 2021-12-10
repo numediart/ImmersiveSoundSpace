@@ -24,4 +24,7 @@ On [Cura](https://ultimaker.com/software), rotate the model to present the inter
 ### Mounting
 You will need a 12 mm long countersunk screw for screwing into the tracker 1/4" insert,
 two [M4 inserts nuts](https://en.wikipedia.org/wiki/Insert_nut) and two 16 mm long M4 screws to fasten the two pieces together.
-![](../img/tracker_printed.jpg)
+![tracker printed](../img/tracker_printed.jpg)
+
+And once mounted : 
+![once mounted](../img/tracker_mounted.jpg)

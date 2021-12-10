@@ -2,8 +2,8 @@
 
 ## Requirements
 - Windows 10, might work on earlier versions too
-- [Steam](https://store.steampowered.com/about/) (if you don't already have one, you will need to create an account)
-- [SteamVR](https://store.steampowered.com/app/250820/SteamVR/) (tested with version 1.13.10, might work with newer versions)
+- [Steam](https://store.steampowered.com/about/) (if you don't already have an account, you will need to create one)
+- [SteamVR](https://store.steampowered.com/app/250820/SteamVR/) (tested until version 1.20.4, might work with newer versions)
 - At least one [HTC Vive Tracker](https://www.vive.com/fr/vive-tracker/) already [paired](https://www.vive.com/us/support/wireless-tracker/category_howto/pairing-vive-tracker.html) to SteamVR
 - Two or more HTC Vive Base stations [1.0](https://www.vive.com/fr/accessory/base-station/) or [2.0](https://www.vive.com/fr/accessory/base-station2/) (double check the compatibility with your trackers)
 - If you don't want to use the Head Mounted Display (HMD) see the following section
@@ -16,6 +16,7 @@
     - Be careful with the comma, there must be one at the end of each line in the section, except for the last line
     - If needed, check your file with a [JSON validator](https://jsonlint.com/)
 - Restart SteamVR
+
 
 ## Installation
 - Install [Anaconda](https://www.anaconda.com/distribution/#download-section) with python 3.X (known to work with python 3.7.x and 3.8.1)
@@ -44,6 +45,8 @@ If for any reason the script doesn't work, try to downgrade the problematic libr
 - numpy-quaternion : 2020.5
 - numba : 0.50.1
 - scipy : 1.5.1
+- opencv-python : 4.5.4.60
+
 
 ## Trackers
 
@@ -93,14 +96,42 @@ Alternatively, you can edit the *steamvr.vrsettings* file. In the *"power"* sect
 `"turnOffControllersTimeout" : 0` (0 means never)
 
 ## Calibration
+
+### Single point calibration
 You can use the *calibration.bat* script to create the calibration file (*Tracking/origin_mat.rtm*) that will next be used at each launch to set the origin and axes of your setup. 
 To do so :
-- In *calibrate.bat file*, @line 18, check that the serial number that will be used to set the origin (given after the `--origin_serial` option) is the same as one of your Vive Trackers.
+- In *calibrate.bat file*, @line 19, check that the serial number that will be used to set the origin (given after the `--origin_serial` option) is the same as one of your Vive Trackers.
 - Place the tracker on the floor, at the position you want to be the origin (the LED on the tracker correspond to the z axis - forward - in Unity)
 - Check the tracker is tracked by the system and press the 'o' key on your keyboard
 - If the calibration is successful, you will see the calibration matrix in the output : 
 ```
 set new origin :
+Single point calibration
+[[-0.39882466 -0.9069581  -0.13552049  0.65755832]
+ [ 0.05969087  0.12179389 -0.9907589  -1.15152502]
+ [ 0.91508245 -0.40322846  0.00556273 -1.88850129]
+ [ 0.          0.          0.          1.        ]]
+```
+The calibration file must have been created in the *Tracking* folder and will be used each time the *HTCTrackerPositionSender.py* script is called.
+
+### Multi-points calibration
+To increase angular precision when calibration, for example to align the Vive Tracker referential with another tracking system, you can use multi-points calibration. To do so, add the option `--real_world_points` to the command line, followed by a path to a JSON file containing an array of points. See [RealWorldPoint.json](RealWorldPoint.json) for an example.
+
+The JSON file consist in a JSON Array of points represented by an id (used for convenience) and coordinates on each axis. The coordinates must be coherent with the coordinates system currently used by the program (Unity, by default). You must define at least 3 points on the floor, but we recommend to define 4 points on the floor plus one at a known height. If there is no point outside of floor plan, the program will create a virtual one using a cross product.
+
+- In *calibrate.bat file*, comment out @line 19, uncomment @line 22, check that the serial number that will be used to set the origin (given after the `--origin_serial` option) is the same as one of your Vive Trackers.
+- Check the tracker is tracked by the system and press the 'o' key on your keyboard
+- A message will appear in the console, asking you to put the calibration on the first point and then press the 'n' key.
+- Then repeat this operation for each calibration point.
+- After the last point, if the calibration is successful, you will see the calibration matrix in the output : 
+```
+set new origin :
+Multi-points calibration
+Place your origin tracker on point
+{'id': 'A', 'x': -0.333, 'y': 0.0, 'z': 0.333}
+and press 'n'
+[...]
+Computing calibration with 4 points
 [[-0.39882466 -0.9069581  -0.13552049  0.65755832]
  [ 0.05969087  0.12179389 -0.9907589  -1.15152502]
  [ 0.91508245 -0.40322846  0.00556273 -1.88850129]
@@ -157,9 +188,12 @@ python HTCTrackerPositionSender.py
         [-h]
         [--listeners LISTENERS]
         [--origin_serial ORIGIN_SERIAL]
+        [--real_world_points REAL_WORLD_POINTS]
         [--framerate FRAMERATE]
-        [--opengl]
+        [--openvr_coordinates]
         [--steam]
+        [--oscpattern OSCPATTERN]
+        [--bundles]
 ```
 
 All arguments are optional:
@@ -177,24 +211,36 @@ Default value is `127.0.0.1:9001`
 The serial number of the tracker used for origin calibration. This option is needed only if you plan to set the origin of your 3D space by pressing *o* key while the script is running. Trackers have a serial number starting with *LHR-* followed by 8 characters in hexadecimal format.  
 Example : `--origin_serial LHR-0A1B2C3D`
 
+- `--real_world_points`  
+The JSON file containing list of points to use for origin calibration.
+
 - `--framerate FRAMERATE`  
 Expected framerate as an integer - used to slow down OSC messages as UnityOSC can't handle more than 50 messages per second.  
 Default value is 30
 
-- `--opengl`  
-Use openGL coordinate system if set, or Unity coordinate system (default) if not set
+- `--openvr_coordinates`  
+Use openVR coordinate system if set, or Unity coordinate system (default) if not set
 
 - `--steam`  
 Open SteamVR when the script is launched
 
+- `--oscpattern`  
+The OSC pattern used to send messages, default is '/iss/tracker'
+
+- `--bundles`  
+Send single frame messages as an OSC bundle
+
 ### Keystroke interaction
 While the script is running, if the command prompt window has the focus, some parameters are controlled by the keys
 - *o* :  
-Will set a new origin for the coordinate system (and save it in a file called *origin_mat.rtm* in the same folder as the script - overwritting the existing version of the file) as soon as the Tracker with serial = *origin_serial* is tracked. It is recommended to ensure that the origin tracker is already tracked and in the correct position before pressing *o* key.
+If in single point calibration mode, will set a new origin for the coordinate system (and save it in a file called *origin_mat.rtm* in the same folder as the script - overwritting the existing version of the file) as soon as the Tracker with serial = *origin_serial* is tracked. It is recommended to ensure that the origin tracker is already tracked and in the correct position before pressing *o* key.  
+If in multi-points calibration mode, starts the calibration process.
+- *n* :  
+In multi-points calibration mode, save the current tracker position and ask to move it to the next calibration point.
 - *r* :  
 Reset the origin. The default origin is one of the base stations.
 - *u* :  
-Switch between Unity and OpenGl coordinate systems.
+Switch between Unity and OpenVR coordinate systems.
 - *esc* :
 Closes OpenVR cleanly and exit the script.
 

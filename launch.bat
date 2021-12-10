@@ -1,6 +1,6 @@
 :: © - 2020 – UMONS - CLICK' Living Lab
 :: 
-:: Immersive Sound Space of University of MONS – CLICK' Living Lab (Fabien Grisard) is free software: 
+:: Immersive Sound Space of University of MONS – CLICK' Living Lab is free software: 
 :: you can redistribute it and/or modify it under the terms of the 3-Clause BSD licence. 
 :: This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
 :: without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -8,7 +8,7 @@
 :: 
 :: ​​​​​You should have received a copy of the 3-Clause BSD licence along with this program.  
 :: 
-:: Each use of this software must be attributed to University of MONS – CLICK' Living Lab  (Fabien Grisard).
+:: Each use of this software must be attributed to University of MONS – CLICK' Living Lab.
 
 
 @echo off
@@ -21,6 +21,9 @@ set nb_scenes=3
 
 :: clients ip is always 127.0.0.1 (localhost) if running this script
 set clients=127.0.0.1:
+
+:: set speed for sending OSC messages
+set framerate=50
 
 :: set configuration for each client
 :: relative path to the executable scene,
@@ -58,6 +61,6 @@ for /l %%i in (1, 1, %nb_scenes%) do (
 
 timeout /t 30
 :: start vive tracking
-echo python Tracking/HTCTrackerPositionSender.py --listeners %clients% --origin_serial %origin_serial% --framerate 20
-start cmd /C python Tracking/HTCTrackerPositionSender.py --listeners %clients% --origin_serial %origin_serial% --framerate 20
+echo python Tracking/HTCTrackerPositionSender.py --listeners %clients% --origin_serial %origin_serial% --framerate %framerate%
+start cmd /C python Tracking/HTCTrackerPositionSender.py --listeners %clients% --origin_serial %origin_serial% --framerate %framerate%
 endlocal
