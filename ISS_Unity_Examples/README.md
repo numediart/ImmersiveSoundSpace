@@ -6,7 +6,7 @@
 - (For InteractiveExampleScene) [Google Resonance Plugin](https://resonance-audio.github.io/resonance-audio/develop/unity/getting-started) for sound spatialization and echo / reflection / attenuation calculation. Licensed under the Apache License, Version 2.0.
 - (For Network examples) [Mirror](https://github.com/vis2k/Mirror), MIT License.
 
-## Scenes
+## Mono player Scenes
 
 ### SimpleScene
 A scene where a tracker moves the main camera. Use it to test if the tracking is correct and the communication with Unity is working.
@@ -23,6 +23,24 @@ Same as LoggerScene, plus an AudioScene, containing a [Google Resonance AudioRoo
 - *Steps* : A GameObject that will move through the scene at 28.4 seconds. Sound by falcospizaetus.
 - *MusicBox* : A GameObject that will follow a trajectory previously recorded in a csv file. Starts at 36 seconds. Sound by InspectorJ.
 
+## Multi players Scenes
+
+### WaitForConnection
+
+### ISSNetworkScene
+
+
+## Prefabs
+All these prefabs are available in the *prefab* folder.
+
+### MonoPlayer
+
+### NetworkPlayer
+
+### NetworkAudioSource
+
+### TrackerPrefab
+
 
 ## Scripts
 
@@ -31,8 +49,8 @@ These scripts are tools necessary to use Immersive Sound Space in a Unity scene.
 
 #### CommandLineParser
 A simple script to call the compiled Unity application from the command line (and so from batch file) with arguments. It allows to specify :
-- the serial number of the Tracker to follow for the main camera (and so the audio listener)
-- the port to listen for incomming OSC messages (this script creates the server)
+- the serial number of the Tracker to follow for the main camera (Mono player) or for the Network player (Multi players)
+- the port to listen for incomming OSC messages (Mono player only)
 
 Other arguments can be implemented quite easily.  
 To use it inside the editor, create an empty GameObject with the script attached and set the values from the editor Inspector.
@@ -41,8 +59,7 @@ To use it inside the editor, create an empty GameObject with the script attached
 A utility that count time from the loading of the current scene. It is used to trigger audio play, trajectories and to get a timestamp on debug messages. It can be paused and resumed with `Chrono.Pause()` and `Chrono.Resume()`, and reset with `Chrono.ResetTimer()`.
 
 #### MoveFromOSC
-Script to attach to the main camera and every object that must follow a HTC Vive tracker. It will parse the OSC messages comming from the Python script and move the object they are attached to accordingly. We recomend to add an offset of -0.15 on the Y axis for the MainCamera, so that it better follows the user's head.
-
+Script to attach to any object that must follow a HTC Vive tracker. It will parse the OSC messages comming from the Python script and move the object they are attached to accordingly. We recomend to add an offset of -0.15 on the Y axis for the MainCamera, so that it better follows the user's head.
 
 ### Loggers
 The *logger* scripts are used to display information on the UI in the compiled application. Their goal is to substitute to the Debug.Log function from Unity. Each of them require a UI panel with a TextField. See the [LoggerScene](#loggerscene) for a use-case example.
@@ -86,3 +103,19 @@ Attached to the *Steps* GameObject in the InteractiveExampleScene.
 #### TrajectoryFromFile
 A script to play back a Tracker trajectory .csv file created with [this tool](https://github.com/numediart/ISS_Utils/tree/master/SaveTrackerTrajectory). If the *Loop* option is activated, the trajectory will be played over a and over, but the sound will be played once only. If the *Ping Pong* option is activated, the trajectory will be played alternatively forward and backward.  
 Attached to the *MusicBox* GameObject in the InteractiveExampleScene.
+
+### Network Scripts
+
+#### MirrorAutoconnect
+
+#### PlayerManager
+
+#### PlayerSetup
+
+#### PlayerTrackerIdSender
+
+#### ViveTrackerSerialNetwork
+
+#### OSCManager
+
+#### TrackersManagerOSC
