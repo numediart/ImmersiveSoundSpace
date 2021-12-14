@@ -24,8 +24,17 @@ Same as LoggerScene, plus an AudioScene, containing a [Google Resonance AudioRoo
 - *MusicBox* : A GameObject that will follow a trajectory previously recorded in a csv file. Starts at 36 seconds. Sound by InspectorJ.
 
 ## Multi players Scenes
+Both scenes must be implemented for using ISS with several interacting users.
 
 ### WaitForConnection
+This is the offline scene, displayed to the clients while not connected to the server. It should not be displayed for more than a second if the server is running on localhost before you launch the client.
+It contains essentially the [NetworkManager](https://mirror-networking.gitbook.io/docs/components/network-manager), the [MirrorAutoconnect](#mirrorautoconnect) script and the [CommandLineParser](#commandlineparser).
+
+All these element must stay in that scene (except MirrorAutoconnect, if you handle the connection to the server by another way, for example using [NetworkManagerHUD](https://mirror-networking.gitbook.io/docs/components/network-manager-hud)).
+
+Note that NetworkManager and CommandLineParser will not be destroyed when loading the NetworkScene.
+
+You can clone this scene and customize it to fit your needs.
 
 ### ISSNetworkScene
 
