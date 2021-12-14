@@ -203,7 +203,7 @@ show the help message and exit
 - `--listeners LISTENERS`  
 The *ipv4:port* of the OSC programs listening. Different listeners must be separated with *;*  
 If multiple ports are used on a single ip, it possible to use this form `ip1:port1-1;port1-2;port1-3;ip2:port2-1;port2-2...`  
-Example : `--listeners 192.168.0.42:5001;50002;127.0.0.1:9001`
+Example : `--listeners 192.168.0.42:5001;5002;127.0.0.1:9001`
 will send values to ports *5001* and *5002* on the computer with IP = *192.168.0.42* and to the port *9001* on *localhost*.  
 Default value is `127.0.0.1:9001`
 

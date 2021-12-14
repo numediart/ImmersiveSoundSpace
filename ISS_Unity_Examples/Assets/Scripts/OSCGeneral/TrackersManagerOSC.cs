@@ -189,8 +189,11 @@ public class TrackersManagerOSC : MonoBehaviour
         string gameObjectName = trackerSerial;
         if (prefab != null && gameObjectName != null) {
             GameObject go = Instantiate(prefab);
-            if(go.tag == "ViveTracker")
+            if (go.tag == "ViveTracker")
+            {
                 go.GetComponent<ViveTrackerSerialNetwork>().trackerSerial = trackerSerial;
+                NetworkServer.Spawn(go);
+            }
             go.name = gameObjectName;
 
             TrackerObject newTracker = new TrackerObject();
@@ -211,6 +214,8 @@ public class TrackersManagerOSC : MonoBehaviour
         if (trackers.ContainsKey(serial))
         {
             Debug.Log("Remove tracker " + serial);
+            if (trackers[serial].gameObject.tag == "ViveTracker")
+                NetworkServer.Destroy(trackers[serial].gameObject);
             Destroy(trackers[serial].gameObject);
             trackers[serial].sw.Stop();
 
